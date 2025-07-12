@@ -1,3 +1,26 @@
+function verificarAutenticacion() {
+    const userLogged = localStorage.getItem('userLogged');
+    const userToken = localStorage.getItem('userToken');
+
+    if (!userLogged || userLogged.toLowerCase() !== 'true' || !userToken) {
+        localStorage.clear();
+        window.location.href = '/login.html';
+        return false;
+    }
+
+    try {
+        const decoded = atob(userToken); // base64 decode
+        const [id, fecha] = decoded.split('-');
+        if (!id || !fecha) throw new Error("Token inválido");
+    } catch (e) {
+        console.error("❌ Token inválido:", e.message);
+        localStorage.clear();
+        window.location.href = '/login.html';
+        return false;
+    }
+
+    return true;
+}
 
 
 function obtenerToken() {
@@ -367,9 +390,11 @@ function filtrarMovimientos() {
 }
 
 function cerrarSesion() {
-    localStorage.removeItem("token");
-    window.location.href = "/";
+    localStorage.removeItem("userLogged");
+    localStorage.removeItem("userToken");
+    window.location.href = "/login.html";
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!verificarAutenticacion()) return;

@@ -1,86 +1,89 @@
 function iniciarSesion(evento) {
-    evento.preventDefault();
+  evento.preventDefault();
 
-    const nombre = document.getElementById("usuario").value;
-    const contraseña = document.getElementById("contraseña").value;
+  const nombre = document.getElementById("usuario").value;
+  const contraseña = document.getElementById("contraseña").value;
 
-    // Validaciones básicas
-    if (!nombre || !contraseña) {
-        mostrarError("Por favor, complete todos los campos");
-        return false;
-    }
+  // Validaciones básicas
+  if (!nombre || !contraseña) {
+    mostrarError("Por favor, complete todos los campos");
+    return false;
+  }
 
-    const datosLogin = {
-        nombre: nombre,
-        contraseña: contraseña
-    };
+  const datosLogin = {
+    nombre: nombre,
+    contraseña: contraseña,
+  };
 
-    fetch("http://localhost:3000/api/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify(datosLogin)
-    })
-    .then(res => res.json())
-    .then(data => {
+  fetch("http://localhost:3000/api/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(datosLogin),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
         if (data.success) {
-            // Guardar token y usuario en localStorage
-            localStorage.setItem('token', data.token); // Usado por el backend
-            localStorage.setItem('usuario', JSON.stringify(data.usuario));
+          // Guardar token y usuario en localStorage con claves correctas
+          localStorage.setItem("userToken", data.token);
+          localStorage.setItem("userLogged", "true");
+          localStorage.setItem("usuario", JSON.stringify(data.usuario)); // opcional
 
-            // Redirigir al dashboard
-            window.location.href = "dashboard.html";
-        } else {
-            mostrarError(data.message || "Usuario o contraseña incorrectos");
+          // Redirigir al dashboard
+          window.location.href = "dashboard.html";
         }
+      } else {
+        mostrarError(data.message || "Usuario o contraseña incorrectos");
+      }
     })
-    .catch(error => {
-        console.error("Error al iniciar sesión:", error);
-        mostrarError("No se pudo conectar al servidor. Intente más tarde.");
+    .catch((error) => {
+      console.error("Error al iniciar sesión:", error);
+      mostrarError("No se pudo conectar al servidor. Intente más tarde.");
     });
 
-    return false;
+  return false;
 }
 
 function mostrarError(mensaje) {
-    let errorDiv = document.getElementById('error-message');
-    if (!errorDiv) {
-        errorDiv = document.createElement('div');
-        errorDiv.id = 'error-message';
-        errorDiv.className = 'error-message';
-        document.querySelector('.login-container')?.appendChild(errorDiv);
-    }
-    errorDiv.textContent = mensaje;
-    errorDiv.style.display = 'block';
+  let errorDiv = document.getElementById("error-message");
+  if (!errorDiv) {
+    errorDiv = document.createElement("div");
+    errorDiv.id = "error-message";
+    errorDiv.className = "error-message";
+    document.querySelector(".login-container")?.appendChild(errorDiv);
+  }
+  errorDiv.textContent = mensaje;
+  errorDiv.style.display = "block";
 
-    setTimeout(() => {
-        errorDiv.style.display = 'none';
-    }, 3000);
+  setTimeout(() => {
+    errorDiv.style.display = "none";
+  }, 3000);
 }
 
 // Verificar si ya hay sesión activa
-document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
-    fetch("http://localhost:3000/api/verificar-token", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            // Redirigir si ya tiene sesión válida
-            window.location.href = "dashboard.html";
-        } else {
-            localStorage.clear(); // Token inválido o expirado
-        }
+  fetch("http://localhost:3000/api/verificar-token", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        // Redirigir si ya tiene sesión válida
+        window.location.href = "dashboard.html";
+      } else {
+        localStorage.clear(); // Token inválido o expirado
+      }
     })
     .catch(() => {
-        localStorage.clear();
+      localStorage.clear();
     });
 });
