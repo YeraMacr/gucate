@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AvocAPP</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    
+</head>
+<body>
+    
+    <!-- Video de fondo -->
+    <div class="video-wrapper">
+        <video class="video-background" autoplay muted loop playsinline>
+            <source src="/assets/img/fondo.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <img src="/assets/mascota.avocapp.png" alt="AvocAPP Logo">
+                <h1>Dashboard AvocAPP</h1>
+            </div>
+            <div class="user-info">
+                <span id="hora-actual" style="color: black;"></span>
+                <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <!-- Mensajes de feedback -->
+        <div id="mensaje-error" class="mensaje error" style="display: none;"></div>
+        <div id="mensaje-exito" class="mensaje exito" style="display: none;"></div>
+
+        <!-- Contenedor de Resumen -->
+        <div class="resumen-container"></div>
+
+        <div class="main-buttons">
+            <button class="btn btn-primary" onclick="mostrarSeccion('registrarEntrada')">
+                Registrar Entrada
+            </button>
+            <button class="btn btn-primary" onclick="mostrarSeccion('registrarSalida')">
+                Registrar Salida/Ventas
+            </button>
+            <button class="btn btn-primary" onclick="mostrarSeccion('verGraficas')">
+                Ver Gráficas
+            </button>
+            <button class="btn btn-primary" onclick="mostrarSeccion('verReportes')">
+                Reportes
+            </button>
+        </div>
+
+        <!-- Sección de Registro de Entrada -->
+        <div id="registrarEntrada" class="seccion" style="display: none;">
+            <h2>Registro de Entrada</h2>
+            <form id="entradaForm" onsubmit="return enviarEntrada(event)">
+                <div class="form-group">
+                    <label for="tipoAguacate">Tipo de Aguacate</label>
+                    <select id="tipoAguacate" required>
+                        <option value="">Seleccione tipo...</option>
+                        <option value="Hass">Hass</option>
+                        <option value="Fuerte">Fuerte</option>
+                        <option value="Criollo">Criollo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="peso">Peso (kg)</label>
+                    <input type="number" id="peso" step="0.01" required>
+                    <p>Pérdida estimada: <span id="perdida-estimada">0.00 kg</span></p>
+                </div>
+                <div class="form-group">
+                    <label for="proveedor">Proveedor</label>
+                    <input type="text" id="proveedor" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar Entrada</button>
+            </form>
+        </div>
+
+        <!-- Sección de Registro de Salida -->
+        <div id="registrarSalida" class="seccion" style="display: none;">
+            <h3>Registrar Salida de Aguacates</h3>
+            <form id="salidaForm" onsubmit="return validarDisponibilidad(event)">
+                <div class="form-group">
+                    <label for="tipoAguacateSalida">Tipo de Aguacate</label>
+                    <select id="tipoAguacateSalida" name="tipoAguacate" required onchange="actualizarDisponible()">
+                        <option value="">Seleccione tipo...</option>
+                        <option value="Hass">Hass</option>
+                        <option value="Semil">Semil</option>
+                        <option value="Choquette">Choquette</option>
+                        <option value="Booth">Booth</option>
+                    </select>
+                    <div id="disponibleInfo" class="info-text"></div>
+                </div>
+                <div class="form-group">
+                    <label for="pesoSalida">Peso (kg)</label>
+                    <input type="number" id="pesoSalida" name="peso" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="precioVenta">Precio de Venta por Kilo ($)</label>
+                    <input type="number" id="precioVenta" name="precioVenta" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="cliente">Cliente</label>
+                    <input type="text" id="cliente" name="cliente" required>
+                </div>
+                <div class="form-group">
+                    <label for="fechaSalida">Fecha</label>
+                    <input type="date" id="fechaSalida" name="fecha" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Registrar Salida</button>
+            </form>
+        </div>
+
+        <!-- Sección de Gráficas -->
+        <div id="verGraficas" class="seccion" style="display: none;">
+            <h3>Estadísticas y Análisis</h3>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h4>Ventas por Tipo de Aguacate</h4>
+                    <canvas id="ventasChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h4>Ingresos Totales</h4>
+                    <canvas id="ingresosChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h4>Pérdidas por Tipo</h4>
+                    <canvas id="perdidasChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nueva sección de Reportes -->
+        <div id="verReportes" class="seccion" style="display: none;">
+            <h3>Reportes y Exportación</h3>
+            
+            <div class="reportes-grid">
+                <!-- Reportes por Período -->
+                <div class="reporte-card">
+                    <h4>Reportes por Período</h4>
+                    <div class="form-group">
+                        <label for="tipoPeriodo">Seleccione Período</label>
+                        <select id="tipoPeriodo" name="tipoPeriodo">
+                            <option value="semanal">Semanal</option>
+                            <option value="mensual">Mensual</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaInicio">Fecha Inicio</label>
+                        <input type="date" id="fechaInicio" name="fechaInicio">
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaFin">Fecha Fin</label>
+                        <input type="date" id="fechaFin" name="fechaFin">
+                    </div>
+                    <div class="botones-reporte">
+                        <button class="btn btn-primary" onclick="generarReporteExcel()">
+                            Exportar a Excel
+                        </button>
+                        <button class="btn btn-primary" onclick="generarReportePDF()">
+                            Exportar a PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Facturas -->
+                <div class="reporte-card">
+                    <h4>Generación de Facturas</h4>
+                    <div class="form-group">
+                        <label for="tipoFactura">Tipo de Factura</label>
+                        <select id="tipoFactura" name="tipoFactura">
+                            <option value="individual">Individual</option>
+                            <option value="consolidado">Consolidado por Cliente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="clienteFactura">Cliente</label>
+                        <input type="text" id="clienteFactura"> 
+                    </div>
+                    <div class="form-group">
+                        <label for="periodoFactura">Período</label>
+                        <select id="periodoFactura" name="periodoFactura">
+                            <option value="semanal">Semanal</option>
+                            <option value="mensual">Mensual</option>
+                            <option value="personalizado">Personalizado</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generarFactura()">
+                        Generar Factura
+                    </button>
+                </div>
+
+                <!-- Resumen de Movimientos -->
+                <div class="reporte-card">
+                    <h4>Resumen de Movimientos</h4>
+                    <div class="table-responsive">
+                        <table id="movimientosTable">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Peso (kg)</th>
+                                    <th>Cliente/Proveedor</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="movimientosBody">
+                                <!-- Se llenará dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="botones-filtro">
+                        <button class="btn btn-secondary" onclick="filtrarMovimientos()">
+                            Filtrar
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportarMovimientos()">
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="/js/dashboard.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login - AvocAPP</title>
+        <link rel="stylesheet" href="/css/login.css">
+    </head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img src="assets/mascota.avocapp.png" alt="AvocAPP Logo" class="logo-img">
+            <h1>¡Bienvenido a AvocAPP!</h1>
+        </div>
+        <form onsubmit="return iniciarSesion(event)">
+            <div class="form-group">
+                <label for="usuario">Usuario</label>
+                <input type="text" id="usuario" name="usuario" required>
+            </div>
+            <div class="form-group">
+                <label for="contraseña">Contraseña</label>
+                <input type="password" id="contraseña" name="contraseña" required>
+            </div>
+            <button type="submit" class="btn-login">Iniciar Sesión</button>
+            <div class="links-container">
+                <p class="register-link">¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a></p>
+                <p class="forgot-password"><a href="recuperar-password.html">¿Olvidaste tu contraseña?</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script src="/js/login.js"></script>
+</body>
+</html>
+
