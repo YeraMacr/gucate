@@ -30,10 +30,10 @@ app.use(express.static(path.join(__dirname, 'static')));
 // 🗃️ Conexión a base de datos
 const conexion = require('./db');
 
-// 🔐 Middleware de autenticación (si se usa en rutas)
+// 🔐 Middleware de autenticación
 const autenticarToken = require('./middlewares/autenticarToken');
 
-// 📦 Rutas de la API
+// 📦 Rutas API (importadas como funciones o como módulos)
 app.use('/api', require('./routes/authRoutes'));
 app.use('/api', require('./routes/entradaRoutes'));
 app.use('/api', require('./routes/pedidoRoutes'));
@@ -43,11 +43,19 @@ app.use('/api', require('./routes/ingresoSemanalRoutes'));
 app.use('/api', require('./routes/ventaRoutes'));
 app.use('/api', require('./routes/reporteSemanalRoutes'));
 
-// ✅ CORREGIDO: Rutas que necesitan conexión (como tokenRoutes)
+// ✅ RUTA DE RESUMEN SEMANAL: asegurarse de pasar `conexion`
+const resumenSemanalRoutes = require('./routes/resumenSemanalRoutes')(conexion);
+app.use('/api', resumenSemanalRoutes);
+
+const disponibleRoutes = require('./routes/disponibleRoutes')(conexion);
+app.use('/api', disponibleRoutes);
+
+
+// ✅ Rutas que necesitan conexión (como tokenRoutes)
 const tokenRoutes = require('./routes/tokenRoutes')(conexion);
 app.use('/api', tokenRoutes);
 
-// 📄 Ruta raíz: login.html
+// 📄 Ruta raíz (login)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'templates', 'login.html'));
 });

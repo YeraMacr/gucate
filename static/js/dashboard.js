@@ -366,17 +366,30 @@ function mostrarMensajeExito(msg) {
     }
 }
 
-function actualizarResumenSemanal() {
+async function actualizarResumenSemanal() {
     const contenedor = document.querySelector('.resumen-container');
     if (!contenedor) return;
-    contenedor.innerHTML = `
-        <div class="tarjeta-resumen">
-            <h3>Resumen Semanal</h3>
-            <p>Total Entradas: <span>0 kg</span></p>
-            <p>Total Salidas: <span>0 kg</span></p>
-            <p>Balance: <span>0 kg</span></p>
-        </div>
-    `;
+
+    try {
+        const res = await fetch('/api/resumen-semanal');
+        const data = await res.json();
+
+        if (data.success) {
+            contenedor.innerHTML = `
+                <div class="tarjeta-resumen">
+                    <h3>Resumen Semanal</h3>
+                    <p>Total Entradas: <span>${data.totalEntradas} kg</span></p>
+                    <p>Total Salidas: <span>${data.totalSalidas} kg</span></p>
+                    <p>Balance: <span>${data.balance} kg</span></p>
+                </div>
+            `;
+        } else {
+            contenedor.innerHTML = `<p class="error">No se pudo cargar el resumen.</p>`;
+        }
+    } catch (error) {
+        console.error("Error al obtener resumen semanal:", error);
+        contenedor.innerHTML = `<p class="error">Error al conectar con el servidor.</p>`;
+    }
 }
 
 function mostrarSeccion(id) {
@@ -394,6 +407,59 @@ function cerrarSesion() {
     localStorage.removeItem("userToken");
     window.location.href = "/login.html";
 }
+async function actualizarDisponible() {
+    const tipo = document.getElementById('tipoAguacateSalida')?.value;
+    const disponibleDiv = document.getElementById('disponibleInfo');
+
+    if (!tipo) {
+        disponibleDiv.textContent = '';
+        return;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/disponible/${tipo}`, {
+            headers: { 'Authorization': `Bearer ${obtenerToken()}` }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            disponibleDiv.textContent = `Disponible: ${data.disponible.toFixed(2)} kg`;
+        } else {
+            disponibleDiv.textContent = 'Error al obtener disponibilidad.';
+        }
+    } catch (err) {
+        console.error("Error al consultar disponibilidad:", err);
+        disponibleDiv.textContent = 'Error al consultar disponibilidad.';
+    }
+}
+
+async function validarDisponibilidad(event) {
+    event.preventDefault();
+
+    const tipo = document.getElementById('tipoAguacateSalida')?.value;
+    const peso = parseFloat(document.getElementById('pesoSalida')?.value);
+
+    if (!tipo || isNaN(peso)) {
+        mostrarError("Tipo y peso válidos son requeridos.");
+        return false;
+    }
+
+    try {
+        const res = await fetch(`http://localhost:3000/api/disponible/${tipo}`, {
+            headers: { 'Authorization': `Bearer ${obtenerToken()}` }
+        });
+        const data = await res.json();
+
+        if (data.success && peso <= data.disponible) {
+            enviarVenta(event); // Si hay suficiente, registrar venta
+        } else {
+            mostrarError(`No hay suficiente ${tipo}. Solo hay disponible ${data.disponible.toFixed(2)} kg.`);
+        }
+    } catch (err) {
+        console.error(err);
+        mostrarError("Error al validar disponibilidad");
+    }
+}
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -407,5 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('peso')?.addEventListener('input', calcularPerdidaEstimada);
     document.getElementById('entradaForm')?.addEventListener('submit', enviarEntrada);
-    document.getElementById('salidaForm')?.addEventListener('submit', enviarVenta);
+    document.getElementById('salidaForm')?.addEventListener('submit', validarDisponibilidad);
 });
+
