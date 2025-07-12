@@ -1,16 +1,4 @@
-// Verificación de autenticación
-function verificarAutenticacion() {
-    const userLogged = localStorage.getItem('userLogged');
-    const userToken = localStorage.getItem('userToken');
 
-    if (!userLogged || userLogged !== 'true' || !userToken) {
-        localStorage.clear();
-        window.location.href = 'login.html';
-        return false;
-    }
-
-    return true;
-}
 
 function obtenerToken() {
     return localStorage.getItem('userToken');

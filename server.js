@@ -4,8 +4,8 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const path = require('path');
 
-// 🔧 Cargar variables de entorno desde .env si no están cargadas
-dotenv.config(); // Esto no daña en producción si Railway ya pasó las variables
+// 🔧 Cargar variables de entorno desde .env
+dotenv.config();
 
 console.log("🌍 Variables de entorno cargadas:");
 console.log({
@@ -16,24 +16,24 @@ console.log({
   DB_NAME: process.env.DB_NAME,
   PORT: process.env.PORT
 });
-// Inicializar app
+
 const app = express();
 
-// ✅ Middleware
+// ✅ Middlewares globales
 app.use(cors());
 app.use(bodyParser.json());
 
-// 📁 Servir archivos estáticos
+// 📁 Archivos estáticos
 app.use(express.static(path.join(__dirname, 'templates')));
 app.use(express.static(path.join(__dirname, 'static')));
 
 // 🗃️ Conexión a base de datos
 const conexion = require('./db');
 
-// 🔐 Middleware de autenticación (si lo usas en rutas)
+// 🔐 Middleware de autenticación (si se usa en rutas)
 const autenticarToken = require('./middlewares/autenticarToken');
 
-// 📦 Rutas API
+// 📦 Rutas de la API
 app.use('/api', require('./routes/authRoutes'));
 app.use('/api', require('./routes/entradaRoutes'));
 app.use('/api', require('./routes/pedidoRoutes'));
@@ -41,8 +41,11 @@ app.use('/api', require('./routes/salidaRoutes'));
 app.use('/api', require('./routes/reporteRoutes'));
 app.use('/api', require('./routes/ingresoSemanalRoutes'));
 app.use('/api', require('./routes/ventaRoutes'));
-app.use('/api', require('./routes/tokenRoutes'));
 app.use('/api', require('./routes/reporteSemanalRoutes'));
+
+// ✅ CORREGIDO: Rutas que necesitan conexión (como tokenRoutes)
+const tokenRoutes = require('./routes/tokenRoutes')(conexion);
+app.use('/api', tokenRoutes);
 
 // 📄 Ruta raíz: login.html
 app.get('/', (req, res) => {
