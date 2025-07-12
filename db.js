@@ -1,10 +1,21 @@
 const mysql = require('mysql2');
-const dotenv = require('dotenv');
-dotenv.config();
+
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
+console.log("🔧 Configuración MySQL desde process.env:");
+console.log({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
 
 const conexion = mysql.createConnection({
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT), 
+  port: parseInt(process.env.DB_PORT || '3306'),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME
